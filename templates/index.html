@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newborn Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Newborn Tracker</h1>
+
+        <div class="d-flex justify-content-end mb-3">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#logModal">Log an Event</button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Feedings</h3>
+                <ul class="list-group">
+                    {% for feeding in feedings %}
+                        <li class="list-group-item">{{ feeding.time.strftime('%Y-%m-%d %H:%M:%S') }} - {{ feeding.duration }} minutes</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h3>Sleep</h3>
+                <ul class="list-group">
+                    {% for sleep in sleep %}
+                        <li class="list-group-item">{{ sleep.time.strftime('%Y-%m-%d %H:%M:%S') }} - {{ sleep.duration }} minutes</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h3>Diaper Changes</h3>
+                <ul class="list-group">
+                    {% for diaper in diapers %}
+                        <li class="list-group-item">{{ diaper.time.strftime('%Y-%m-%d %H:%M:%S') }} - {{ diaper.type }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <h3 class="mt-5">Summary Chart</h3>
+        <canvas id="summaryChart" width="400" height="200"></canvas>
+    </div>
+
+    <!-- Modal for Logging an Event -->
+    <!-- Modal for Logging an Event -->
+<div class="modal fade" id="logModal" tabindex="-1" aria-labelledby="logModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logModalLabel">Log an Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('log') }}">
+                    <div class="mb-3">
+                        <label for="type" class="form-label">Event Type</label>
+                        <select class="form-select" name="type" id="type">
+                            <option value="feeding">Feeding</option>
+                            <option value="sleep">Sleep</option>
+                            <option value="diaper">Diaper</option>
+                        </select>
+                    </div>
+
+                    <!-- Fields for Feeding -->
+                    <div id="feeding_fields" class="mb-3">
+                        <label for="feeding_duration" class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" name="duration" id="feeding_duration">
+                    </div>
+
+                    <!-- Fields for Sleep -->
+                    <div id="sleep_fields" class="mb-3">
+                        <label for="sleep_duration" class="form-label">Duration (minutes)</label>
+                        <input type="number" class="form-control" name="duration" id="sleep_duration">
+                    </div>
+
+                    <!-- Fields for Diaper -->
+                    <div id="diaper_fields" class="mb-3">
+                        <label for="diaper_type" class="form-label">Diaper Type</label>
+                        <select class="form-select" name="diaper_type" id="diaper_type">
+                            <option value="wet">Wet</option>
+                            <option value="dirty">Dirty</option>
+                            <option value="both">Both</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Log Event</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    <script>
+        const ctx = document.getElementById('summaryChart').getContext('2d');
+        const summaryChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Feedings', 'Sleep', 'Diapers'],
+                datasets: [{
+                    label: 'Number of Events',
+                    data: [
+                        {{ feedings|length }},
+                        {{ sleep|length }},
+                        {{ diapers|length }}
+                    ],
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107']
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
